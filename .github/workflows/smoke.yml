@@ -1,0 +1,25 @@
+name: Actions smoke check
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/smoke.yml'
+permissions:
+  contents: write
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Record run
+        run: |
+          mkdir -p data
+          echo "run_id=${GITHUB_RUN_ID}" > data/action_smoke.txt
+          echo "sha=${GITHUB_SHA}" >> data/action_smoke.txt
+      - name: Commit marker
+        run: |
+          git config user.email "action@github.com"
+          git config user.name "JRA History Bot"
+          git add data/action_smoke.txt
+          git commit -m "Actions smoke check (run ${GITHUB_RUN_ID})"
+          git push
