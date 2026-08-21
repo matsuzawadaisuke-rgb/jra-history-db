@@ -1,0 +1,44 @@
+name: Build JRA one-year history
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'scripts/**'
+      - '.github/workflows/build_history.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: pip install requests beautifulsoup4 lxml
+      - name: Build one-year JRA history
+        run: python scripts/build_jra_history.py
+      - name: Commit generated data
+        run: |
+          git config user.email "action@github.com"
+          git config user.name "JRA History Bot"
+          git add data/
+          if ! git diff --staged --quiet; then
+            git commit -m "Build JRA one-year history database"
+            git push
+          fi
+      - name: Upload CSV artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: jra-history-output
+          path: |
+            data/jra_results_20250821_20260820.csv
+            data/jra_anomalies_20250821_20260820.csv
+            data/build_summary.json
+          retention-days: 7
