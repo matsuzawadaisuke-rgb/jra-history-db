@@ -8,6 +8,10 @@ on:
       - '.github/workflows/build_history.yml'
   workflow_dispatch:
 
+concurrency:
+  group: jra-history-build
+  cancel-in-progress: true
+
 permissions:
   contents: write
 
