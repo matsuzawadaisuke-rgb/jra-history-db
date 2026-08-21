@@ -1,0 +1,40 @@
+name: Augment JRA Aug 15-16
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'tools/augment_aug1516.py'
+      - '.github/workflows/augment_aug1516.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  augment:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: pip install requests beautifulsoup4 lxml
+      - name: Augment Aug 15-16 data
+        run: python tools/augment_aug1516.py
+      - name: Commit augmented data
+        run: |
+          git config user.email "action@github.com"
+          git config user.name "JRA History Bot"
+          git add data/
+          if ! git diff --staged --quiet; then
+            git commit -m "Add JRA results for 2026-08-15 and 2026-08-16"
+            git push
+          fi
+      - name: Upload completed CSVs
+        uses: actions/upload-artifact@v4
+        with:
+          name: jra-history-complete
+          path: |
+            data/jra_results_20250821_20260820.csv
+            data/jra_anomalies_20250821_20260820.csv
+          retention-days: 7
