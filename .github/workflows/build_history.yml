@@ -34,7 +34,7 @@ jobs:
           git config user.name "JRA History Bot"
           git add data/
           if ! git diff --staged --quiet; then
-            git commit -m "Build JRA one-year history database"
+            git commit -m "Build JRA one-year history database (run ${GITHUB_RUN_ID})"
             git push
           fi
       - name: Upload CSV artifacts
