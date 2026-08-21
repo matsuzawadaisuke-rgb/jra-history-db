@@ -35,8 +35,13 @@ jobs:
           python-version: '3.11'
       - name: Install dependencies
         run: pip install requests beautifulsoup4 lxml
-      - name: Build one-year JRA history
-        run: python scripts/build_jra_history.py
+      - name: Build or repair one-year JRA history
+        run: |
+          if [ -f data/jra_results_20250821_20260820.csv ]; then
+            python scripts/repair_course_meta.py
+          else
+            python scripts/build_jra_history.py
+          fi
       - name: Commit generated data
         run: |
           git add data/
