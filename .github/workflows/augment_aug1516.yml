@@ -8,12 +8,24 @@ on:
   workflow_dispatch:
 permissions:
   contents: write
+concurrency:
+  group: augment-jra-aug1516
+  cancel-in-progress: true
 jobs:
   augment:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
+      - name: Record active run id
+        run: |
+          mkdir -p data
+          printf 'run_id=%s\nstarted_at=%s\n' "$GITHUB_RUN_ID" "$(date -u +'%Y-%m-%dT%H:%M:%SZ')" > data/augment_run.txt
+          git config user.email "action@github.com"
+          git config user.name "JRA History Bot"
+          git add data/augment_run.txt
+          git commit -m "Start Aug 15-16 augmentation (run ${GITHUB_RUN_ID})" || true
+          git push || true
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
@@ -27,7 +39,7 @@ jobs:
           git config user.name "JRA History Bot"
           git add data/
           if ! git diff --staged --quiet; then
-            git commit -m "Add JRA results for 2026-08-15 and 2026-08-16"
+            git commit -m "Add JRA results for 2026-08-15 and 2026-08-16 (run ${GITHUB_RUN_ID})"
             git push
           fi
       - name: Upload completed CSVs
