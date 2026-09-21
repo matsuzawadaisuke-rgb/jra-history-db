@@ -17,7 +17,7 @@ MEETINGS={
     "2026-09-13":["2026060404","2026090404"],
     "2026-09-19":["2026060405","2026090405"],
     "2026-09-20":["2026060406","2026090406"],
-    "2026-09-21":["2026060407","2026090407"],
+    "2026-09-21":["2026090407"],
 }
 FIELDS=["race_id","date","venue","race_no","race_name","surface","distance_m","class","field_size","weather","going",
 "first_no","first_name","first_popularity","first_odds","second_no","second_name","second_popularity","second_odds",
