@@ -18,7 +18,20 @@ jobs:
         with:
           python-version: '3.11'
       - name: Install dependencies
-        run: |\n          pip install requests beautifulsoup4 lxml playwright\n          playwright install chromium
+        run: |
+          pip install requests beautifulsoup4 lxml playwright
+          playwright install chromium
+      - name: Debug rendered result page
+        run: |
+          python - <<'PY'
+          from playwright.sync_api import sync_playwright
+          with sync_playwright() as p:
+              b=p.chromium.launch(headless=True)
+              page=b.new_page()
+              page.goto("https://race.netkeiba.com/race/result.html?race_id=202609040105", wait_until="domcontentloaded", timeout=60000)
+              print(page.locator("body").inner_text()[:7000])
+              b.close()
+          PY
       - name: Fetch JRA results
         run: python tools/fetch_sep05_sep21.py
       - name: Commit data
