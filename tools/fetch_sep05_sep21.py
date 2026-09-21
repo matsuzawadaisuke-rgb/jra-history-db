@@ -54,34 +54,55 @@ def ids_for(d):
     bases=MEETINGS.get(d.isoformat(),[])
     return [f"{base}{r:02d}" for base in bases for r in range(1,13)]
 def parse(rid,d):
-    url=f"https://db.sp.netkeiba.com/race/{rid}/";html=get(url);issues=[]
+    modern_url=f"https://race.netkeiba.com/race/result.html?race_id={rid}"
+    legacy_url=f"https://db.netkeiba.com/race/{rid}/"
+    html=get(modern_url,enc="utf-8");issues=[]
     if not html:return None,["fetch_failed"]
-    soup=BeautifulSoup(html,"lxml");intro=soup.select_one(".data_intro,.racedata");info=intro.get_text(" ",strip=True) if intro else ""
-    h1=soup.select_one(".data_intro h1,.racedata h1");name=h1.get_text(" ",strip=True) if h1 else "";surface="";distance="";weather="";going=""
-    m=re.search(r"(芝|ダート|障害)[^0-9]{0,12}([0-9]{3,4})m",info)
-    if m:surface=m.group(1);distance=int(m.group(2))
-    wm=re.search(r"天候\\s*[:：]\\s*([^\\s/]+)",info)
+    soup=BeautifulSoup(html,"html.parser")
+    table=(soup.find("table",class_="RaceTable01") or soup.find("table",class_="race_table_01") or soup.select_one("#All_Result_Table"))
+    data_box=(soup.find("div",class_="RaceData01") or soup.find("div",class_="data_intro") or soup.find("dl",class_="racedata"))
+    info=data_box.get_text(" ",strip=True) if data_box else ""
+    rname=soup.find("div",class_="RaceName") or soup.find("h1",class_="RaceName") or soup.find("h1")
+    name=re.sub(r"\\s+","",rname.get_text(" ",strip=True)) if rname else ""
+    surface="";distance="";weather="";going=""
+    m=re.search(r"(芝|ダ|ダート|障|障害)[^0-9]{0,20}([0-9]{3,4})m",info)
+    if m:
+        s=m.group(1);surface="芝" if s=="芝" else ("ダート" if "ダ" in s else "障害");distance=int(m.group(2))
+    wm=re.search(r"天候[:：]?\\s*([晴曇雨雪小]+)",info)
     if wm:weather=wm.group(1)
-    gm=re.search(r"(?:芝|ダート)\\s*[:：]\\s*([^\\s/]+)",info)
+    gm=re.search(r"(?:馬場|芝|ダート)[:：]?\\s*([良稍重不]+)",info)
     if gm:going=gm.group(1)
-    runners=[];table=soup.select_one("table.race_table_01")
+    runners=[]
     if table:
-        trs=table.select("tr");hdr=[norm(x.get_text(" ",strip=True)) for x in trs[0].select("th")] if trs else []
-        for tr in trs[1:]:
-            cells=tr.select("td")
-            if not cells:continue
-            vals=[c.get_text(" ",strip=True) for c in cells];row={hdr[i]:vals[i] for i in range(min(len(hdr),len(vals)))} if hdr else {};mm=re.match(r"^\\d+",str(row.get("着順",vals[0] if vals else "")))
-            if not mm:continue
-            runners.append({"rank":int(mm.group()),"no":digits(row.get("馬番","")),"name":row.get("馬名",""),"pop":digits(row.get("人気","")),"odds":row.get("単勝","")})
-    runners.sort(key=lambda x:x["rank"]);top=runners[:3];p=pays(soup)
+        ths=[norm(th.get_text(" ",strip=True)) for th in table.find_all("th")]
+        def gi(keys):
+            for i,h in enumerate(ths):
+                if any(k in h for k in keys): return i
+            return -1
+        rank_i=gi(["着順"]);uma_i=gi(["馬番"]);name_i=gi(["馬名"]);odds_i=gi(["単勝","オッズ"]);pop_i=gi(["人気"])
+        for tr in table.find_all("tr")[1:]:
+            tds=tr.find_all("td")
+            if len(tds)<5:continue
+            def g(i):return tds[i].get_text(" ",strip=True) if i!=-1 and i<len(tds) else ""
+            ranktxt=g(rank_i)
+            if not re.match(r"^\\d+$",ranktxt):continue
+            hname=g(name_i)
+            if name_i!=-1 and name_i<len(tds):
+                a=tds[name_i].find("a")
+                if a:hname=a.get_text(strip=True)
+            runners.append({"rank":int(ranktxt),"no":digits(g(uma_i)),"name":hname,"pop":digits(g(pop_i)),"odds":g(odds_i)})
+    runners.sort(key=lambda x:x["rank"]);top=runners[:3]
     if len(top)<3:issues.append("top3_missing")
+    legacy=get(legacy_url,enc="euc-jp")
+    p=pays(BeautifulSoup(legacy,"lxml")) if legacy else {"単勝":"","馬連":"","ワイド":"","三連複":"","三連単":""}
     if not surface or not distance:issues.append("course_meta_missing")
     if not weather or (surface!="障害" and not going):issues.append("weather_going_missing")
     if not p["馬連"]:issues.append("quinella_missing")
     if not p["三連複"]:issues.append("trio_missing")
     if not p["ワイド"]:issues.append("wide_missing")
     def v(i,k):return top[i].get(k,"") if len(top)>i else ""
-    return {"race_id":rid,"date":d.isoformat(),"venue":VENUE_CODES.get(rid[4:6],""),"race_no":int(rid[-2:]),"race_name":name,"surface":surface,"distance_m":distance,"class":cls(name,info),"field_size":len(runners),"weather":weather,"going":going,"first_no":v(0,"no"),"first_name":v(0,"name"),"first_popularity":v(0,"pop"),"first_odds":v(0,"odds"),"second_no":v(1,"no"),"second_name":v(1,"name"),"second_popularity":v(1,"pop"),"second_odds":v(1,"odds"),"third_no":v(2,"no"),"third_name":v(2,"name"),"third_popularity":v(2,"pop"),"third_odds":v(2,"odds"),"win_payout":p["単勝"],"quinella_payout":p["馬連"],"wide_payouts":p["ワイド"],"trio_payout":p["三連複"],"trifecta_payout":p["三連単"],"source_bulk":f"https://db.netkeiba.com/race/list/{d.strftime('%Y%m%d')}/","source_detail":url,"jra_official_check":"未照合","data_status":"公開データ取得済" if not issues else "異常候補","notes":";".join(sorted(set(issues)))},issues
+    return {"race_id":rid,"date":d.isoformat(),"venue":VENUE_CODES.get(rid[4:6],""),"race_no":int(rid[-2:]),"race_name":name,"surface":surface,"distance_m":distance,"class":cls(name,info),"field_size":len(runners),"weather":weather,"going":going,"first_no":v(0,"no"),"first_name":v(0,"name"),"first_popularity":v(0,"pop"),"first_odds":v(0,"odds"),"second_no":v(1,"no"),"second_name":v(1,"name"),"second_popularity":v(1,"pop"),"second_odds":v(1,"odds"),"third_no":v(2,"no"),"third_name":v(2,"name"),"third_popularity":v(2,"pop"),"third_odds":v(2,"odds"),"win_payout":p["単勝"],"quinella_payout":p["馬連"],"wide_payouts":p["ワイド"],"trio_payout":p["三連複"],"trifecta_payout":p["三連単"],"source_bulk":f"https://db.netkeiba.com/race/list/{d.strftime('%Y%m%d')}/","source_detail":modern_url,"jra_official_check":"未照合","data_status":"公開データ取得済" if not issues else "異常候補","notes":";".join(sorted(set(issues)))},issues
+
 def main():
     OUT.parent.mkdir(exist_ok=True);rows=[];day_counts={};bad=[];d=START
     while d<=END:
