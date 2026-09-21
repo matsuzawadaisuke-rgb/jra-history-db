@@ -1,0 +1,39 @@
+name: Fetch JRA Sep 5-21 results
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'tools/fetch_sep05_sep21.py'
+      - '.github/workflows/fetch_sep_results.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: pip install requests beautifulsoup4 lxml
+      - name: Fetch JRA results
+        run: python tools/fetch_sep05_sep21.py
+      - name: Commit data
+        run: |
+          git config user.email "action@github.com"
+          git config user.name "JRA History Bot"
+          git add data/jra_results_20260905_20260921.csv data/jra_results_20260905_20260921_summary.json
+          if ! git diff --staged --quiet; then
+            git commit -m "Add JRA results Sep 5-21 2026"
+            git push
+          fi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: jra-sep05-sep21-results
+          path: |
+            data/jra_results_20260905_20260921.csv
+            data/jra_results_20260905_20260921_summary.json
+          retention-days: 7
