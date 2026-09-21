@@ -5,6 +5,7 @@ import csv,re,time,json
 from datetime import date,timedelta
 from pathlib import Path
 import requests
+from concurrent.futures import ThreadPoolExecutor,as_completed
 from bs4 import BeautifulSoup
 START=date(2026,9,5); END=date(2026,9,21)
 OUT=Path("data/jra_results_20260905_20260921.csv")
@@ -104,19 +105,30 @@ def parse(rid,d):
     return {"race_id":rid,"date":d.isoformat(),"venue":VENUE_CODES.get(rid[4:6],""),"race_no":int(rid[-2:]),"race_name":name,"surface":surface,"distance_m":distance,"class":cls(name,info),"field_size":len(runners),"weather":weather,"going":going,"first_no":v(0,"no"),"first_name":v(0,"name"),"first_popularity":v(0,"pop"),"first_odds":v(0,"odds"),"second_no":v(1,"no"),"second_name":v(1,"name"),"second_popularity":v(1,"pop"),"second_odds":v(1,"odds"),"third_no":v(2,"no"),"third_name":v(2,"name"),"third_popularity":v(2,"pop"),"third_odds":v(2,"odds"),"win_payout":p["単勝"],"quinella_payout":p["馬連"],"wide_payouts":p["ワイド"],"trio_payout":p["三連複"],"trifecta_payout":p["三連単"],"source_bulk":f"https://db.netkeiba.com/race/list/{d.strftime('%Y%m%d')}/","source_detail":modern_url,"jra_official_check":"未照合","data_status":"公開データ取得済" if not issues else "異常候補","notes":";".join(sorted(set(issues)))},issues
 
 def main():
-    OUT.parent.mkdir(exist_ok=True);rows=[];day_counts={};bad=[];d=START
+    OUT.parent.mkdir(exist_ok=True);rows=[];day_counts={};bad=[];pairs=[];d=START
     while d<=END:
         ids=ids_for(d)
         if ids:
-            print(d.isoformat(),len(ids),flush=True);day_counts[d.isoformat()]=len(ids)
-            for rid in ids:
-                row,iss=parse(rid,d)
-                if row:rows.append(row)
-                if iss:bad.append({"race_id":rid,"issues":iss})
+            day_counts[d.isoformat()]=len(ids)
+            pairs.extend((rid,d) for rid in ids)
         d+=timedelta(days=1)
+    print("targets",len(pairs),day_counts,flush=True)
+    with ThreadPoolExecutor(max_workers=10) as ex:
+        futs={ex.submit(parse,rid,d):(rid,d) for rid,d in pairs}
+        done=0
+        for fut in as_completed(futs):
+            rid,d=futs[fut]
+            try:
+                row,iss=fut.result()
+            except Exception as e:
+                row=None;iss=[f"exception:{type(e).__name__}:{e}"]
+            if row:rows.append(row)
+            if iss:bad.append({"race_id":rid,"issues":iss})
+            done+=1
+            if done%24==0:print("processed",done,"/",len(pairs),flush=True)
     rows.sort(key=lambda r:(r["date"],r["venue"],int(r["race_no"])))
     with OUT.open("w",newline="",encoding="utf-8-sig") as f:
         w=csv.DictWriter(f,fieldnames=FIELDS);w.writeheader();w.writerows(rows)
-    summary={"start":START.isoformat(),"end":END.isoformat(),"rows":len(rows),"days":day_counts,"unique_ids":len({r["race_id"] for r in rows}),"issue_rows":len(bad)}
+    summary={"start":START.isoformat(),"end":END.isoformat(),"rows":len(rows),"days":day_counts,"unique_ids":len({r["race_id"] for r in rows}),"issue_rows":len(bad),"issues":bad[:20]}
     SUMMARY.write_text(json.dumps(summary,ensure_ascii=False,indent=2),encoding="utf-8");print(json.dumps(summary,ensure_ascii=False),flush=True)
 if __name__=="__main__":main()
