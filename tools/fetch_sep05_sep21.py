@@ -58,7 +58,8 @@ def parse_payout_rows(rows):
         elif label=="ワイド":
             combos=[x.strip() for x in str(cells[1]).split("\n") if x.strip()]
             pays=[x.replace(",","") for x in re.findall(r"[0-9,]+(?=円)",str(cells[2]))]
-            out["ワイド"]=" / ".join(f"{re.sub(r'\\s+','-',c)}:{p}" for c,p in zip(combos,pays))
+            norm_combos=[re.sub(r"\\s+","-",x) for x in combos]
+            out["ワイド"]=" / ".join(f"{x}:{p}" for x,p in zip(norm_combos,pays))
     return out
 
 async def scrape_one(browser,rid,d,sem):
