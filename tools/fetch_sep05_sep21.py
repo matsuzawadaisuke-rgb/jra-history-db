@@ -54,7 +54,7 @@ def ids_for(d):
     bases=MEETINGS.get(d.isoformat(),[])
     return [f"{base}{r:02d}" for base in bases for r in range(1,13)]
 def parse(rid,d):
-    url=f"https://db.netkeiba.com/race/{rid}/";html=get(url);issues=[]
+    url=f"https://db.sp.netkeiba.com/race/{rid}/";html=get(url);issues=[]
     if not html:return None,["fetch_failed"]
     soup=BeautifulSoup(html,"lxml");intro=soup.select_one(".data_intro,.racedata");info=intro.get_text(" ",strip=True) if intro else ""
     h1=soup.select_one(".data_intro h1,.racedata h1");name=h1.get_text(" ",strip=True) if h1 else "";surface="";distance="";weather="";going=""
