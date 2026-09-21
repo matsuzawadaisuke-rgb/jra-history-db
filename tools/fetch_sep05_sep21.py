@@ -41,11 +41,18 @@ def pays(soup):
             elif "三連複" in typ:out["三連複"]=first
             elif "三連単" in typ:out["三連単"]=first
     return out
+MEETINGS={
+    "2026-09-05":["2026060401","2026090401","2026010205"],
+    "2026-09-06":["2026060402","2026090402","2026010206"],
+    "2026-09-12":["2026060403","2026090403"],
+    "2026-09-13":["2026060404","2026090404"],
+    "2026-09-19":["2026060405","2026090405"],
+    "2026-09-20":["2026060406","2026090406"],
+    "2026-09-21":["2026060407","2026090407"],
+}
 def ids_for(d):
-    ds=d.strftime("%Y%m%d");html=get(f"https://db.netkeiba.com/race/list/{ds}/")
-    if not html:return []
-    ids=sorted(set(re.findall(r"/race/(20\\d{10})/?",html)))
-    return [r for r in ids if r[:4]==str(d.year) and r[4:6] in VENUE_CODES]
+    bases=MEETINGS.get(d.isoformat(),[])
+    return [f"{base}{r:02d}" for base in bases for r in range(1,13)]
 def parse(rid,d):
     url=f"https://db.netkeiba.com/race/{rid}/";html=get(url);issues=[]
     if not html:return None,["fetch_failed"]
