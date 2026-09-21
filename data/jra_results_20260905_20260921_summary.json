@@ -9,87 +9,15 @@
     "2026-09-13": 24,
     "2026-09-19": 24,
     "2026-09-20": 24,
-    "2026-09-21": 24
+    "2026-09-21": 12
   },
   "unique_ids": 180,
-  "issue_rows": 13,
+  "issue_rows": 1,
   "issues": [
     {
       "race_id": "202609040212",
       "issues": [
         "weather_missing"
-      ]
-    },
-    {
-      "race_id": "unknown",
-      "issues": [
-        "timeout"
-      ]
-    },
-    {
-      "race_id": "unknown",
-      "issues": [
-        "timeout"
-      ]
-    },
-    {
-      "race_id": "unknown",
-      "issues": [
-        "timeout"
-      ]
-    },
-    {
-      "race_id": "unknown",
-      "issues": [
-        "timeout"
-      ]
-    },
-    {
-      "race_id": "unknown",
-      "issues": [
-        "timeout"
-      ]
-    },
-    {
-      "race_id": "unknown",
-      "issues": [
-        "timeout"
-      ]
-    },
-    {
-      "race_id": "unknown",
-      "issues": [
-        "timeout"
-      ]
-    },
-    {
-      "race_id": "unknown",
-      "issues": [
-        "timeout"
-      ]
-    },
-    {
-      "race_id": "unknown",
-      "issues": [
-        "timeout"
-      ]
-    },
-    {
-      "race_id": "unknown",
-      "issues": [
-        "timeout"
-      ]
-    },
-    {
-      "race_id": "unknown",
-      "issues": [
-        "timeout"
-      ]
-    },
-    {
-      "race_id": "unknown",
-      "issues": [
-        "timeout"
       ]
     }
   ]
