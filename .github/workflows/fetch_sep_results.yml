@@ -32,10 +32,12 @@ jobs:
               print("TITLE", page.title())
               tables=page.locator("table")
               print("TABLE_COUNT",tables.count())
-              for i in range(min(tables.count(),12)):
-                  t=tables.nth(i)
-                  print("TABLE",i,"CLASS",t.get_attribute("class"))
-                  print(t.inner_text()[:1200])
+              rows=page.locator("table.RaceTable01 tr")
+              print("ROW_COUNT",rows.count())
+              for i in range(min(rows.count(),4)):
+                  row=rows.nth(i)
+                  print("ROW",i,"CLASS",row.get_attribute("class"))
+                  print("CELLS",row.locator("th,td").all_inner_texts())
               b.close()
           PY
       - name: Fetch JRA results
