@@ -18,7 +18,7 @@ jobs:
         with:
           python-version: '3.11'
       - name: Install dependencies
-        run: pip install requests beautifulsoup4 lxml
+        run: |\n          pip install requests beautifulsoup4 lxml playwright\n          playwright install chromium
       - name: Fetch JRA results
         run: python tools/fetch_sep05_sep21.py
       - name: Commit data
