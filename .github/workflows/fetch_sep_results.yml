@@ -29,7 +29,13 @@ jobs:
               b=p.chromium.launch(headless=True)
               page=b.new_page()
               page.goto("https://race.netkeiba.com/race/result.html?race_id=202609040105", wait_until="domcontentloaded", timeout=60000)
-              print(page.locator("body").inner_text()[:7000])
+              print("TITLE", page.title())
+              tables=page.locator("table")
+              print("TABLE_COUNT",tables.count())
+              for i in range(min(tables.count(),12)):
+                  t=tables.nth(i)
+                  print("TABLE",i,"CLASS",t.get_attribute("class"))
+                  print(t.inner_text()[:1200])
               b.close()
           PY
       - name: Fetch JRA results
