@@ -12,5 +12,147 @@
     "2026-09-21": 24
   },
   "unique_ids": 192,
-  "issue_rows": 192
+  "issue_rows": 192,
+  "issues": [
+    {
+      "race_id": "202606040101",
+      "issues": [
+        "top3_missing",
+        "weather_going_missing"
+      ]
+    },
+    {
+      "race_id": "202606040102",
+      "issues": [
+        "top3_missing",
+        "weather_going_missing"
+      ]
+    },
+    {
+      "race_id": "202606040103",
+      "issues": [
+        "top3_missing",
+        "weather_going_missing"
+      ]
+    },
+    {
+      "race_id": "202606040107",
+      "issues": [
+        "top3_missing",
+        "weather_going_missing"
+      ]
+    },
+    {
+      "race_id": "202606040106",
+      "issues": [
+        "top3_missing",
+        "weather_going_missing"
+      ]
+    },
+    {
+      "race_id": "202606040110",
+      "issues": [
+        "top3_missing",
+        "weather_going_missing"
+      ]
+    },
+    {
+      "race_id": "202606040104",
+      "issues": [
+        "top3_missing",
+        "weather_going_missing"
+      ]
+    },
+    {
+      "race_id": "202606040108",
+      "issues": [
+        "top3_missing",
+        "weather_going_missing"
+      ]
+    },
+    {
+      "race_id": "202606040105",
+      "issues": [
+        "top3_missing",
+        "weather_going_missing"
+      ]
+    },
+    {
+      "race_id": "202606040109",
+      "issues": [
+        "top3_missing",
+        "weather_going_missing"
+      ]
+    },
+    {
+      "race_id": "202606040111",
+      "issues": [
+        "top3_missing",
+        "weather_going_missing"
+      ]
+    },
+    {
+      "race_id": "202609040102",
+      "issues": [
+        "top3_missing",
+        "weather_going_missing"
+      ]
+    },
+    {
+      "race_id": "202609040101",
+      "issues": [
+        "top3_missing",
+        "weather_going_missing"
+      ]
+    },
+    {
+      "race_id": "202609040103",
+      "issues": [
+        "top3_missing",
+        "weather_going_missing"
+      ]
+    },
+    {
+      "race_id": "202609040104",
+      "issues": [
+        "top3_missing",
+        "weather_going_missing"
+      ]
+    },
+    {
+      "race_id": "202606040112",
+      "issues": [
+        "top3_missing",
+        "weather_going_missing"
+      ]
+    },
+    {
+      "race_id": "202609040105",
+      "issues": [
+        "top3_missing",
+        "weather_going_missing"
+      ]
+    },
+    {
+      "race_id": "202609040108",
+      "issues": [
+        "top3_missing",
+        "weather_going_missing"
+      ]
+    },
+    {
+      "race_id": "202609040106",
+      "issues": [
+        "top3_missing",
+        "weather_going_missing"
+      ]
+    },
+    {
+      "race_id": "202609040110",
+      "issues": [
+        "top3_missing",
+        "weather_going_missing"
+      ]
+    }
+  ]
 }
